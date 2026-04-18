@@ -1,0 +1,176 @@
+{% extends "base/base.html" %}
+{% block titulo %}Mi Perfil — CiudadConnect{% endblock %}
+{% block subtitulo %}Mi perfil{% endblock %}
+{% block nav_perfil %}active{% endblock %}
+
+{% block contenido %}
+<div class="row g-4">
+
+    <!-- Columna izquierda — info del usuario -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4 text-center">
+                {% if user.foto_perfil %}
+                    <img src="{{ user.foto_perfil.url }}"
+                         class="rounded-circle mb-3"
+                         style="width: 110px; height: 110px; object-fit: cover; border: 4px solid #e2e8f0;">
+                {% else %}
+                    <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center
+                                justify-content-center mx-auto mb-3"
+                         style="width: 110px; height: 110px;">
+                        <i class="bi bi-person fs-1 text-primary"></i>
+                    </div>
+                {% endif %}
+
+                <h5 class="fw-bold mb-1">{{ user.nombre_completo }}</h5>
+                <p class="text-muted small mb-2">{{ user.email }}</p>
+                <span class="badge bg-primary">{{ user.get_rol_display }}</span>
+
+                <hr>
+
+                <div class="text-start small">
+                    <p class="mb-2">
+                        <i class="bi bi-card-text text-muted me-2"></i>
+                        <strong>Identificación:</strong> {{ user.numero_identificacion }}
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-telephone text-muted me-2"></i>
+                        <strong>Teléfono:</strong>
+                        {{ user.telefono|default:"No registrado" }}
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-geo-alt text-muted me-2"></i>
+                        <strong>Dirección:</strong>
+                        {{ user.direccion|default:"No registrada" }}
+                    </p>
+                    <p class="mb-0">
+                        <i class="bi bi-calendar text-muted me-2"></i>
+                        <strong>Miembro desde:</strong>
+                        {{ user.fecha_registro|date:"d/m/Y" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mis estadísticas -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">
+                    {% if user.es_administrador %}Reportes del sistema{% else %}Mis reportes{% endif %}
+                </h6>
+                <div class="row g-2 text-center">
+                    <div class="col-6">
+                        <div class="bg-light rounded p-2">
+                            <h4 class="fw-bold mb-0 text-primary">{{ total_reportes }}</h4>
+                            <p class="small text-muted mb-0">Total</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-light rounded p-2">
+                            <h4 class="fw-bold mb-0 text-warning">{{ pendientes }}</h4>
+                            <p class="small text-muted mb-0">Pendientes</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-light rounded p-2">
+                            <h4 class="fw-bold mb-0 text-info">{{ en_proceso }}</h4>
+                            <p class="small text-muted mb-0">En proceso</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-light rounded p-2">
+                            <h4 class="fw-bold mb-0 text-success">{{ resueltos }}</h4>
+                            <p class="small text-muted mb-0">Resueltos</p>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'lista_reportes' %}" class="btn btn-outline-primary btn-sm w-100 mt-3">
+                    <i class="bi bi-flag me-1"></i>
+                    {% if user.es_administrador %}Ver todos los reportes{% else %}Ver mis reportes{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna derecha — formularios -->
+    <div class="col-lg-8">
+
+        <!-- Editar perfil -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-pencil me-2 text-primary"></i>Editar perfil
+                </h5>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show small">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Nombre completo</label>
+                        {{ form.nombre_completo }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Número de identificación</label>
+                        {{ form.numero_identificacion }}
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Teléfono</label>
+                            {{ form.telefono }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Dirección</label>
+                            {{ form.direccion }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Foto de perfil</label>
+                        {% if user.foto_perfil %}
+                            <div class="mb-2">
+                                <img src="{{ user.foto_perfil.url }}"
+                                     class="rounded"
+                                     style="height: 60px; width: 60px; object-fit: cover;">
+                                <span class="small text-muted ms-2">Foto actual</span>
+                            </div>
+                        {% endif %}
+                        {{ form.foto_perfil }}
+                    </div>
+                    <div class="mb-4 form-check">
+                        {{ form.notificaciones_email }}
+                        <label class="form-check-label small">
+                            Recibir notificaciones por correo
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Guardar cambios
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Cambiar contraseña -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-lock me-2 text-primary"></i>Cambiar contraseña
+                </h5>
+                <p class="text-muted small mb-3">
+                    Por seguridad te recomendamos usar una contraseña de al menos 8 caracteres.
+                </p>
+                <a href="{% url 'cambiar_password' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-key me-2"></i>Cambiar contraseña
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base/base.html" %}
+{% block titulo %}Nuevo Reporte — CiudadConnect{% endblock %}
+{% block subtitulo %}Crear nuevo reporte{% endblock %}
+{% block nav_reportes %}active{% endblock %}
+
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-flag me-2 text-primary"></i>Nuevo reporte de incidencia
+                </h5>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Título del reporte</label>
+                        {{ form.titulo }}
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Categoría</label>
+                            {{ form.categoria }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Prioridad</label>
+                            {{ form.prioridad }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Descripción detallada</label>
+                        {{ form.descripcion }}
+                    </div>
+
+                    <!-- Mapa para seleccionar ubicación -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">
+                            Ubicación en el mapa
+                            <span class="text-muted fw-normal">(haz clic para marcar el lugar)</span>
+                        </label>
+                        <div id="mapa-selector" style="height: 350px; border-radius: 10px; border: 1px solid #dee2e6;"></div>
+                        {{ form.latitud }}
+                        {{ form.longitud }}
+                        <div id="coordenadas-info" class="mt-2 small text-muted d-none">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            Ubicación seleccionada: <span id="coords-texto"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small">Foto de evidencia (opcional)</label>
+                        {{ form.foto_evidencia }}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-send me-2"></i>Enviar reporte
+                        </button>
+                        <a href="{% url 'lista_reportes' %}" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+    function initMap() {
+        const ciudadCenter = { lat: 8.7479, lng: -75.8814 }; // Montería, Córdoba
+        const map = new google.maps.Map(document.getElementById('mapa-selector'), {
+            zoom: 13,
+            center: ciudadCenter,
+        });
+
+        let marker = null;
+
+        map.addListener('click', function(event) {
+            const lat = event.latLng.lat();
+            const lng = event.latLng.lng();
+
+            if (marker) marker.setMap(null);
+
+            marker = new google.maps.Marker({
+                position: event.latLng,
+                map: map,
+                animation: google.maps.Animation.DROP,
+            });
+
+            document.getElementById('id_latitud').value = lat;
+            document.getElementById('id_longitud').value = lng;
+
+            document.getElementById('coordenadas-info').classList.remove('d-none');
+            document.getElementById('coords-texto').textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+        });
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initMap" async defer></script>
+{% endblock %}

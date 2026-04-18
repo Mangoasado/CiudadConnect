@@ -1,0 +1,47 @@
+Guía para Iniciar el Proyecto CiudadConnect
+
+Este proyecto es una aplicación web desarrollada con Django para la gestión de datos relacionados con desarrollo sostenible en una ciudad.
+
+Requisitos Previos:
+- Python 3.8 o superior instalado en tu sistema.
+- Git (opcional, para clonar el repositorio).
+
+Pasos para Configurar y Ejecutar el Proyecto:
+
+1. Clona o descarga el proyecto:
+
+
+2. Navega a la carpeta del proyecto:
+
+3. Crea un entorno virtual:
+   - Ejecuta: python -m venv env
+   - Esto crea una carpeta 'env' con el entorno virtual.
+
+4. Activa el entorno virtual:
+   - En Windows: env\Scripts\activate
+   - En macOS/Linux: source env/bin/activate
+   - Deberías ver '(env)' al inicio de la línea de comandos.
+
+5. Instala las dependencias:
+   - Ejecuta: pip install -r requirements.txt
+   - Esto instalará Django, Pillow y otras librerías necesarias.
+
+6. Configura la base de datos:
+   - Ve a la carpeta del proyecto Django: cd CiudadConnect
+   - Ejecuta: python manage.py migrate
+   - Esto aplicará las migraciones y creará la base de datos SQLite.
+
+7. Crea un superusuario (opcional, para acceder al admin de Django):
+   - Ejecuta: python manage.py createsuperuser
+   - Sigue las instrucciones para crear un usuario administrador.
+
+8. Ejecuta el servidor de desarrollo:
+   - Ejecuta: python manage.py runserver
+   - El servidor se iniciará en http://127.0.0.1:8000/
+   - Abre un navegador y ve a esa URL para ver la aplicación.
+
+Notas Adicionales:
+- Si encuentras errores, asegúrate de que el entorno virtual esté activado.
+- Las dependencias principales son: Django (framework web), Pillow (manejo de imágenes), matplotlib y numpy (gráficos y datos), reportlab (generación de PDFs para reportes).
+- El proyecto incluye apps como estadisticas, mapa, notificaciones, reportes y usuarios.
+- Si necesitas modificar configuraciones, revisa el archivo CiudadConnect/settings.py.

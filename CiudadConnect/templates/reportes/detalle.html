@@ -1,0 +1,168 @@
+{% extends "base/base.html" %}
+{% block titulo %}Reporte — CiudadConnect{% endblock %}
+{% block subtitulo %}Detalle del reporte{% endblock %}
+{% block nav_reportes %}active{% endblock %}
+
+{% block contenido %}
+<div class="row g-4">
+    <!-- Info principal -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="fw-bold mb-0">{{ reporte.titulo }}</h5>
+                    <span class="badge bg-{{ reporte.color_estado }} fs-6">
+                        {{ reporte.get_estado_display }}
+                    </span>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-auto">
+                        <span class="badge bg-light text-dark border">
+                            <i class="bi {{ reporte.icono_categoria }}"></i>
+                            {{ reporte.get_categoria_display }}
+                        </span>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-light text-dark border">
+                            Prioridad: {{ reporte.get_prioridad_display }}
+                        </span>
+                    </div>
+                </div>
+                <p class="text-muted small mb-2">
+                    <i class="bi bi-geo-alt"></i> {{ reporte.direccion }}
+                </p>
+                <p class="text-muted small mb-3">
+                    <i class="bi bi-calendar"></i> {{ reporte.fecha_reporte|date:"d/m/Y H:i" }}
+                    · <i class="bi bi-person"></i> {{ reporte.usuario.nombre_completo }}
+                </p>
+                <hr>
+                <p class="mb-0">{{ reporte.descripcion }}</p>
+            </div>
+        </div>
+
+        {% if reporte.foto_evidencia %}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Foto de evidencia</h6>
+                <img src="{{ reporte.foto_evidencia.url }}" class="img-fluid rounded" style="max-height: 400px;">
+            </div>
+        </div>
+        {% endif %}
+
+        {% if reporte.comentario_admin %}
+        <div class="card border-0 shadow-sm border-start border-primary border-3">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-2">
+                    <i class="bi bi-chat-left-text text-primary"></i> Comentario del administrador
+                </h6>
+                <p class="mb-0">{{ reporte.comentario_admin }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-lg-4">
+        <!-- Panel de gestión para administradores -->
+        {% if user.es_administrador %}
+        <div class="card border-0 shadow-sm mb-4 border-start border-info border-3" id="cambiar-estado">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-gear text-info me-2"></i>Gestión de administrador
+                </h6>
+                
+                <form method="post" action="{% url 'actualizar_estado' reporte.pk %}" class="mb-3">
+                    {% csrf_token %}
+                    <label class="form-label fw-semibold small">Cambiar estado</label>
+                    <div class="input-group mb-2">
+                        <select name="estado" class="form-select form-select-sm" required>
+                            <option value="">— Seleccionar estado —</option>
+                            {% for valor, etiqueta in estados %}
+                                <option value="{{ valor }}" {% if reporte.estado == valor %}selected{% endif %}>
+                                    {{ etiqueta }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <label class="form-label fw-semibold small">Comentario (opcional)</label>
+                    <textarea name="comentario_admin" class="form-control form-control-sm mb-3" 
+                              rows="3" placeholder="Agrega un comentario...">{{ reporte.comentario_admin }}</textarea>
+                    
+                    <button type="submit" class="btn btn-info btn-sm w-100">
+                        <i class="bi bi-check-circle me-1"></i>Actualizar estado
+                    </button>
+                </form>
+                
+                <small class="text-muted">
+                    <strong>Nota:</strong> Los cambios de estado serán visibles para el usuario inmediatamente.
+                </small>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Botones de acción -->
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body p-3">
+                <h6 class="fw-bold mb-3">Acciones</h6>
+                <div class="d-grid gap-2">
+
+                    {% if user.es_administrador or reporte.usuario == user %}
+                        {% if user.es_administrador or reporte.estado == 'pendiente' %}
+                            <a href="{% url 'editar_reporte' reporte.pk %}"
+                                class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil me-2"></i>Editar reporte
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'eliminar_reporte' reporte.pk %}"
+                            class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash me-2"></i>Eliminar reporte
+                        </a>
+                    {% endif %}
+
+                    <a href="{% url 'lista_reportes' %}"
+                        class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-2"></i>Volver a la lista
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Info del reportante -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-3">
+                <h6 class="fw-bold mb-3">Información del reportante</h6>
+                <p class="mb-2">
+                    <strong>{{ reporte.usuario.nombre_completo }}</strong><br>
+                    <small class="text-muted">{{ reporte.usuario.email }}</small>
+                </p>
+                {% if reporte.usuario.telefono %}
+                    <p class="mb-2 small">
+                        <i class="bi bi-telephone me-1"></i>{{ reporte.usuario.telefono }}
+                    </p>
+                {% endif %}
+                {% if reporte.usuario.direccion %}
+                    <p class="mb-0 small">
+                        <i class="bi bi-geo-alt me-1"></i>{{ reporte.usuario.direccion }}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+    function initMap() {
+        const pos = { lat: {{ reporte.latitud }}, lng: {{ reporte.longitud }} };
+        const map = new google.maps.Map(document.getElementById('mapa-detalle'), {
+            zoom: 15,
+            center: pos,
+        });
+        new google.maps.Marker({ position: pos, map: map });
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initMap" async defer></script>
+{% endblock %}

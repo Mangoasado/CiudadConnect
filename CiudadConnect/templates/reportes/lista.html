@@ -1,0 +1,121 @@
+{% extends "base/base.html" %}
+{% block titulo %}Reportes — CiudadConnect{% endblock %}
+{% block subtitulo %}Lista de reportes{% endblock %}
+{% block nav_reportes %}active{% endblock %}
+
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">
+        {% if user.es_administrador %}Todos los reportes{% else %}Mis reportes{% endif %}
+    </h4>
+    <a href="{% url 'nuevo_reporte' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-2"></i>Nuevo reporte
+    </a>
+</div>
+
+{% if user.es_administrador %}
+<div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+    <i class="bi bi-shield-check me-2"></i>
+    <strong>Modo administrador:</strong> Estás viendo todos los reportes del sistema.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<!-- Filtros -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold">Estado</label>
+                <select name="estado" class="form-select form-select-sm">
+                    <option value="">Todos los estados</option>
+                    {% for valor, etiqueta in estados %}
+                    <option value="{{ valor }}" {% if estado_actual == valor %}selected{% endif %}>
+                        {{ etiqueta }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold">Categoría</label>
+                <select name="categoria" class="form-select form-select-sm">
+                    <option value="">Todas las categorías</option>
+                    {% for valor, etiqueta in categorias %}
+                    <option value="{{ valor }}" {% if categoria_actual == valor %}selected{% endif %}>
+                        {{ etiqueta }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-outline-primary btn-sm me-2">
+                    <i class="bi bi-funnel"></i> Filtrar
+                </button>
+                <a href="{% url 'lista_reportes' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista -->
+{% if reportes %}
+<div class="row g-3">
+    {% for reporte in reportes %}
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="d-flex gap-3">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded d-flex align-items-center">
+                            <i class="bi {{ reporte.icono_categoria }} fs-5 text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">
+                                <a href="{% url 'detalle_reporte' reporte.pk %}" class="text-decoration-none text-dark">
+                                    {{ reporte.titulo }}
+                                </a>
+                            </h6>
+                            <p class="text-muted small mb-1">
+                                <i class="bi bi-geo-alt"></i> {{ reporte.direccion }}
+                            </p>
+                            <p class="text-muted small mb-0">
+                                <i class="bi bi-calendar"></i> {{ reporte.fecha_reporte|date:"d/m/Y H:i" }}
+                                {% if user.es_administrador %}
+                                · <i class="bi bi-person"></i> {{ reporte.usuario.nombre_completo }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column align-items-end gap-2">
+                        <span class="badge bg-{{ reporte.color_estado }}">
+                            {{ reporte.get_estado_display }}
+                        </span>
+                        <span class="badge bg-light text-dark border">
+                            {{ reporte.get_categoria_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-2 d-flex gap-2 justify-content-end flex-wrap">
+                    <a href="{% url 'detalle_reporte' reporte.pk %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-arrow-right me-1"></i> Ver detalles
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-inbox fs-1 text-muted"></i>
+        <p class="text-muted mt-3 mb-0">No hay reportes para mostrar.</p>
+        <a href="{% url 'nuevo_reporte' %}" class="btn btn-primary mt-3">
+            <i class="bi bi-plus-circle me-2"></i>Crear primer reporte
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

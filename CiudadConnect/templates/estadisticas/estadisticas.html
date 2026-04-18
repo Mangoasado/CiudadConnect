@@ -1,0 +1,257 @@
+{% extends "base/base.html" %}
+{% block titulo %}Estadísticas — CiudadConnect{% endblock %}
+{% block subtitulo %}Estadísticas de incidencias{% endblock %}
+{% block nav_estadisticas %}active{% endblock %}
+
+{% block estilos_extra %}
+<style>
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    .chart-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .progress-bar-label {
+        font-size: 0.78rem;
+        color: #555;
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">Estadísticas de la ciudad</h4>
+    <span class="text-muted small">
+        <i class="bi bi-calendar"></i> Datos en tiempo real
+    </span>
+</div>
+
+<!-- Tarjetas resumen -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 small">Total reportes</p>
+                        <h2 class="fw-bold mb-0">{{ total }}</h2>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                        <i class="bi bi-flag fs-3 text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 small">Pendientes</p>
+                        <h2 class="fw-bold mb-0">{{ pendientes }}</h2>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                        <i class="bi bi-clock fs-3 text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 small">En proceso</p>
+                        <h2 class="fw-bold mb-0">{{ en_proceso }}</h2>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                        <i class="bi bi-gear fs-3 text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 small">Resueltos</p>
+                        <h2 class="fw-bold mb-0">{{ resueltos }}</h2>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                        <i class="bi bi-check-circle fs-3 text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tasa de resolución -->
+<div class="card chart-card mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0">Tasa de resolución</h6>
+            <span class="fw-bold text-success">{{ tasa_resolucion }}%</span>
+        </div>
+        <div class="progress" style="height: 12px; border-radius: 8px;">
+            <div class="progress-bar bg-success" role="progressbar"
+                 style="width: {{ tasa_resolucion }}%; border-radius: 8px;">
+            </div>
+        </div>
+        <p class="text-muted small mt-2 mb-0">
+            {{ resueltos }} de {{ total }} reportes han sido resueltos.
+        </p>
+    </div>
+</div>
+
+<!-- Gráficas -->
+<div class="row g-4 mb-4">
+    <!-- Por estado (dona) -->
+    <div class="col-md-6">
+        <div class="card chart-card h-100">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-4">Reportes por estado</h6>
+                {% if total > 0 %}
+                    <canvas id="graficaEstado" height="220"></canvas>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-bar-chart fs-1"></i>
+                        <p class="mt-2 mb-0">Sin datos aún</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Por categoría (barras) -->
+    <div class="col-md-6">
+        <div class="card chart-card h-100">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-4">Reportes por categoría</h6>
+                {% if total > 0 %}
+                    <canvas id="graficaCategoria" height="220"></canvas>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-bar-chart fs-1"></i>
+                        <p class="mt-2 mb-0">Sin datos aún</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Por prioridad -->
+<div class="card chart-card mb-4">
+    <div class="card-body p-4">
+        <h6 class="fw-bold mb-4">Distribución por prioridad</h6>
+        {% if total > 0 %}
+            {% for label, dato in prioridad_zip %}
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="progress-bar-label text-capitalize">{{ label }}</span>
+                    <span class="progress-bar-label fw-semibold">{{ dato }}</span>
+                </div>
+                <div class="progress" style="height: 8px; border-radius: 6px;">
+                    {% if total > 0 %}
+                    <div class="progress-bar
+                        {% if label == 'urgente' %}bg-danger
+                        {% elif label == 'alta' %}bg-warning
+                        {% elif label == 'media' %}bg-info
+                        {% else %}bg-success{% endif %}"
+                         style="width: {% widthratio dato total 100 %}%; border-radius: 6px;">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted text-center py-3 mb-0">Sin datos aún</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const estadoColorMap = {
+        'pendiente': '#ffc107',
+        'en_proceso': '#0dcaf0',
+        'resuelto': '#198754',
+        'rechazado': '#dc3545'
+    };
+
+    const coloresEstado = {{ labels_estado|safe }}.map(estado => estadoColorMap[estado] || '#6c757d');
+    const coloresCat = [
+        '#1a3c5e', '#2563a8', '#3b82f6', '#60a5fa',
+        '#93c5fd', '#bfdbfe', '#dbeafe'
+    ];
+
+    {% if total > 0 %}
+
+    // Gráfica de dona — estados
+    const ctxEstado = document.getElementById('graficaEstado').getContext('2d');
+    new Chart(ctxEstado, {
+        type: 'doughnut',
+        data: {
+            labels: {{ labels_estado|safe }},
+            datasets: [{
+                data: {{ datos_estado|safe }},
+                backgroundColor: coloresEstado,
+                borderWidth: 2,
+                borderColor: '#fff',
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // Gráfica de barras — categorías
+    const ctxCat = document.getElementById('graficaCategoria').getContext('2d');
+    new Chart(ctxCat, {
+        type: 'bar',
+        data: {
+            labels: {{ labels_categoria|safe }},
+            datasets: [{
+                label: 'Reportes',
+                data: {{ datos_categoria|safe }},
+                backgroundColor: coloresCat,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+
+    {% endif %}
+</script>
+{% endblock %}

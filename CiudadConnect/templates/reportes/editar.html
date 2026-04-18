@@ -1,0 +1,139 @@
+{% extends "base/base.html" %}
+{% block titulo %}Editar Reporte — CiudadConnect{% endblock %}
+{% block subtitulo %}Editar reporte{% endblock %}
+{% block nav_reportes %}active{% endblock %}
+
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-pencil me-2 text-primary"></i>
+                    Editar reporte
+                </h5>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} small alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Título</label>
+                        {{ form.titulo }}
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Categoría</label>
+                            {{ form.categoria }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Prioridad</label>
+                            {{ form.prioridad }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Descripción</label>
+                        {{ form.descripcion }}
+                    </div>
+
+                    <!-- Mapa para actualizar ubicación -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">
+                            Ubicación en el mapa
+                            <span class="text-muted fw-normal">(haz clic para marcar el lugar)</span>
+                        </label>
+                        <div id="mapa-selector" style="height: 350px; border-radius: 10px; border: 1px solid #dee2e6;"></div>
+                        {{ form.latitud }}
+                        {{ form.longitud }}
+                        <div id="coordenadas-info" class="mt-2 small text-muted d-none">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            Ubicación seleccionada: <span id="coords-texto"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small">Foto de evidencia</label>
+                        {% if reporte.foto_evidencia %}
+                            <div class="mb-2">
+                                <img src="{{ reporte.foto_evidencia.url }}"
+                                        class="rounded"
+                                        style="height: 80px; width: 80px; object-fit: cover;">
+                                <span class="small text-muted ms-2">Foto actual</span>
+                            </div>
+                        {% endif %}
+                        {{ form.foto_evidencia }}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-save me-2"></i>Guardar cambios
+                        </button>
+                        <a href="{% url 'detalle_reporte' reporte.pk %}"
+                            class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+    function initMap() {
+        const latInput = document.getElementById('id_latitud');
+        const lngInput = document.getElementById('id_longitud');
+        const initialLat = parseFloat(latInput.value) || 8.7479;
+        const initialLng = parseFloat(lngInput.value) || -75.8814;
+        const ciudadCenter = { lat: initialLat, lng: initialLng };
+
+        const map = new google.maps.Map(document.getElementById('mapa-selector'), {
+            zoom: 13,
+            center: ciudadCenter,
+        });
+
+        let marker = null;
+
+        if (!isNaN(initialLat) && !isNaN(initialLng) && latInput.value && lngInput.value) {
+            marker = new google.maps.Marker({
+                position: ciudadCenter,
+                map: map,
+            });
+            document.getElementById('coordenadas-info').classList.remove('d-none');
+            document.getElementById('coords-texto').textContent = initialLat.toFixed(6) + ', ' + initialLng.toFixed(6);
+        }
+
+        map.addListener('click', function(event) {
+            const lat = event.latLng.lat();
+            const lng = event.latLng.lng();
+
+            if (marker) marker.setMap(null);
+
+            marker = new google.maps.Marker({
+                position: event.latLng,
+                map: map,
+                animation: google.maps.Animation.DROP,
+            });
+
+            latInput.value = lat;
+            lngInput.value = lng;
+
+            document.getElementById('coordenadas-info').classList.remove('d-none');
+            document.getElementById('coords-texto').textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+        });
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initMap" async defer></script>
+{% endblock %}

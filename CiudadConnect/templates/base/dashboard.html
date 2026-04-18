@@ -1,0 +1,164 @@
+{% extends "base/base.html" %}
+{% block titulo %}Inicio — CiudadConnect{% endblock %}
+{% block subtitulo %}Dashboard{% endblock %}
+{% block nav_inicio %}active{% endblock %}
+
+{% block contenido %}
+<div class="row mb-4">
+    <div class="col">
+        <h4 class="fw-bold">
+            Bienvenido, {{ user.nombre_completo }} 👋
+        </h4>
+        <p class="text-muted">
+            {% if user.es_administrador %}
+                Panel de administración — gestiona todos los reportes de la ciudad.
+            {% else %}
+                Aquí tienes un resumen de tus reportes ciudadanos.
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<!-- Tarjetas de resumen -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 small">Total reportes</p>
+                        <h2 class="fw-bold mb-0">{{ total }}</h2>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                        <i class="bi bi-flag fs-3 text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 small">Pendientes</p>
+                        <h2 class="fw-bold mb-0">{{ pendientes }}</h2>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                        <i class="bi bi-clock fs-3 text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 small">En proceso</p>
+                        <h2 class="fw-bold mb-0">{{ en_proceso }}</h2>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                        <i class="bi bi-gear fs-3 text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 small">Resueltos</p>
+                        <h2 class="fw-bold mb-0">{{ resueltos }}</h2>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                        <i class="bi bi-check-circle fs-3 text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones rápidas y últimos reportes -->
+<div class="row g-4">
+
+    <!-- Acciones rápidas -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Acciones rápidas</h6>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'nuevo_reporte' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Nuevo reporte
+                    </a>
+                    <a href="{% url 'lista_reportes' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-list-ul me-2"></i>Ver reportes
+                    </a>
+                    <a href="{% url 'mapa' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-map me-2"></i>Ver mapa
+                    </a>
+                    <a href="{% url 'estadisticas' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-bar-chart me-2"></i>Estadísticas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimos reportes -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0">Últimos reportes</h6>
+                    <a href="{% url 'lista_reportes' %}" class="small text-primary">
+                        Ver todos <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+
+                {% if ultimos_reportes %}
+                    <div class="list-group list-group-flush">
+                        {% for reporte in ultimos_reportes %}
+                        <a href="{% url 'detalle_reporte' reporte.pk %}"
+                           class="list-group-item list-group-item-action px-0 py-3 border-0 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex gap-3 align-items-start">
+                                    <div class="bg-primary bg-opacity-10 p-2 rounded">
+                                        <i class="bi {{ reporte.icono_categoria }} text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <p class="fw-semibold mb-0 small">
+                                            {{ reporte.titulo }}
+                                        </p>
+                                        <p class="text-muted mb-0" style="font-size: 0.78rem;">
+                                            <i class="bi bi-geo-alt"></i> {{ reporte.direccion }}
+                                            · {{ reporte.fecha_reporte|date:"d/m/Y" }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <span class="badge bg-{{ reporte.color_estado }} ms-2">
+                                    {{ reporte.get_estado_display }}
+                                </span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox fs-1 text-muted"></i>
+                        <p class="text-muted mt-2 mb-0">No hay reportes aún.</p>
+                        <a href="{% url 'nuevo_reporte' %}" class="btn btn-primary btn-sm mt-3">
+                            <i class="bi bi-plus-circle me-1"></i>Crear primer reporte
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
