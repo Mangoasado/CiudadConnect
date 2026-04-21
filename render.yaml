@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: ciudadconnect
+    runtime: python
+    plan: free
+    buildCommand: bash build.sh
+    startCommand: gunicorn CiudadConnect.wsgi:application --chdir CiudadConnect --log-file - --workers 3 --timeout 60
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: PYTHON_VERSION
+        value: "3.12.4"

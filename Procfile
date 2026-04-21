@@ -1,1 +1,1 @@
-web: cd CiudadConnect && gunicorn CiudadConnect.wsgi:application --log-file - --workers 3
+web: gunicorn CiudadConnect.wsgi:application --chdir CiudadConnect --log-file - --workers 3 --timeout 60
