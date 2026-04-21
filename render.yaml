@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     buildCommand: bash build.sh
-    startCommand: gunicorn CiudadConnect.wsgi:application --chdir CiudadConnect --log-file - --workers 3 --timeout 60
+    startCommand: cd CiudadConnect && gunicorn CiudadConnect.wsgi:application --log-file - --workers 3 --timeout 60
     envVars:
       - key: DEBUG
         value: "False"
