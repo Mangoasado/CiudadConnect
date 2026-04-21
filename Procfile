@@ -1,1 +1,1 @@
-web: sh -c 'cd CiudadConnect && gunicorn CiudadConnect.wsgi:application --log-file -'
+web: gunicorn CiudadConnect.CiudadConnect.wsgi:application --bind 0.0.0.0:${PORT:-8000}
