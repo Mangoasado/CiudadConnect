@@ -27,11 +27,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default=None)
-if not SECRET_KEY and not DEBUG:
-    raise ValueError('SECRET_KEY environment variable must be set in production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
+
+# Validar SECRET_KEY en producción
+if not SECRET_KEY and not DEBUG:
+    raise ValueError('SECRET_KEY environment variable must be set in production')
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.onrender.com').split(',')
 if not DEBUG:
