@@ -1,0 +1,1 @@
+web: cd CiudadConnect && gunicorn CiudadConnect.wsgi:application --log-file - --workers 3
