@@ -93,17 +93,12 @@ WSGI_APPLICATION = 'CiudadConnect.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DB_URL = config('DATABASE_URL', default=None)
-if DB_URL:
-    import dj_database_url
-    DATABASES = {'default': dj_database_url.config(default=DB_URL)}
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
 
 
 # Password validation
